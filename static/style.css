@@ -93,16 +93,24 @@ p {
     font-size: 1.15rem;
     box-sizing: border-box;
 }
-button {
-    margin-top: 10px;
-    padding: 10px;
-    background: #19c37d;
-    border: none;
-    border-radius: 6px;
-    color: white;
-    cursor: pointer;
+
+
+.icon-box {
+    margin-top: 8px;
+    display: flex;
+    gap: 15px;              /* space between icons */
+    justify-content: flex-start;  /* left aligned */
 }
 
-button:hover {
-    background: #14a46c;
+.icon-box i {
+    color: rgba(255,255,255,0.4);
+    cursor: pointer;
+    transition: 0.3s;
+    font-size: 18px;
+    
+}
+
+.icon-box i:hover {
+    color: #9333ea;
+    transform: scale(1.2);
 }
