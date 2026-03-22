@@ -5,9 +5,20 @@ from nltk.corpus import stopwords
 from nltk.cluster.util import cosine_distance
 import networkx as nx
 import numpy as np
+import PyPDF2
 
 app = Flask(__name__)
 
+import PyPDF2
+
+def extract_text_from_pdf(file):
+    reader = PyPDF2.PdfReader(file)
+    text = ""
+
+    for page in reader.pages:
+        text += page.extract_text()
+
+    return text
 
 def read_article(text):
     sentences = text.split(". ")
@@ -79,9 +90,22 @@ def generate_summary(text, top_n=3):
 @app.route('/', methods=['GET', 'POST'])
 def index():
     summary = ""
+
     if request.method == 'POST':
-        text = request.form['text']
-        summary = generate_summary(text)
+
+        # Text input
+        if 'text' in request.form and request.form['text'].strip():
+            text = request.form['text']
+            summary = generate_summary(text)
+
+        # PDF input
+        elif 'pdf' in request.files:
+            file = request.files['pdf']
+
+            if file and file.filename != "":
+                text = extract_text_from_pdf(file)
+                summary = generate_summary(text)
+
     return render_template('index.html', summary=summary)
 
 if __name__ == '__main__':
