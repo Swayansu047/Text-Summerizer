@@ -34,7 +34,7 @@
         <span id="fileText"></span>
     </p>
 
-    <button type="submit">Summarize</button>
+    <button id="actionBtn" type="submit">Summarize</button>
 
 </form>
 
@@ -75,7 +75,24 @@ function showFileName(input) {
         fileText.innerText = "Attached: " + input.files[0].name;
         fileName.classList.add("show");
     }
+
 }
+
+document.addEventListener("DOMContentLoaded", function() {
+
+    const summary = document.getElementById("summaryText").innerText.trim();
+    const btn = document.getElementById("actionBtn");
+
+    if (summary !== "") {
+        btn.innerText = "Clear";
+        btn.type = "button";
+
+        btn.onclick = function() {
+            window.location.href = "/";
+        };
+    }
+
+});
 
 </script>
 
