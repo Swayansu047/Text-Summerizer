@@ -40,6 +40,23 @@
 
 <h2>Summary</h2>
 
+{% if stats %}
+<div class="stats-box">
+    <div class="stat">
+        <span class="stat-value">{{ stats.original }}</span>
+        <span class="stat-label">Original Words</span>
+    </div>
+    <div class="stat-arrow">→</div>
+    <div class="stat">
+        <span class="stat-value">{{ stats.summary }}</span>
+        <span class="stat-label">Summary Words</span>
+    </div>
+    <div class="stat-pill">
+        ↓ {{ stats.reduction }}% shorter
+    </div>
+</div>
+{% endif %}
+
 <p id="summaryText">{{ summary }}</p>
 
 <div class="icon-box">
