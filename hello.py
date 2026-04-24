@@ -5,6 +5,7 @@ import PyPDF2
 import nltk
 from nltk.corpus import stopwords
 from nltk.cluster.util import cosine_distance
+from nltk.tokenize import sent_tokenize
 from flask import Flask, request, render_template
 
 app = Flask(__name__)
@@ -23,7 +24,7 @@ def extract_text_from_pdf(file):
 # ── Text Processing ───────────────────────────────────────────────────────────
 
 def read_article(text):
-    sentences = text.split(". ")
+    sentences = sent_tokenize(text)
     clean_sentences = []
     for sentence in sentences:
         sentence = re.sub("[^a-zA-Z]", " ", sentence)
@@ -69,13 +70,16 @@ def gen_sim_matrix(sentences, stop_words):
 
 def generate_summary(text, top_n=3):
     if not text.strip():
-        return "Please enter some text."
+        return "Please enter some text.", {}
+
+    # Compression score — count words before summarizing
+    original_word_count = len(text.split())
 
     stop_words = stopwords.words('english')
     sentences = read_article(text)
 
     if len(sentences) <= top_n:
-        return text
+        return text, {}
 
     similarity_matrix = gen_sim_matrix(sentences, stop_words)
     graph = nx.from_numpy_array(similarity_matrix)
@@ -87,26 +91,37 @@ def generate_summary(text, top_n=3):
     )
 
     summary_sentences = [" ".join(ranked_sentences[i][1]) for i in range(top_n)]
-    return ". ".join(summary_sentences)
+    summary = ". ".join(summary_sentences)
 
+    # Calculate compression stats
+    summary_word_count = len(summary.split())
+    reduction = round((1 - summary_word_count / original_word_count) * 100)
+    stats = {
+        "original": original_word_count,
+        "summary": summary_word_count,
+        "reduction": reduction
+    }
+
+    return summary, stats
 
 # ── Routes ────────────────────────────────────────────────────────────────────
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
     summary = ""
+    stats = {}
 
     if request.method == 'POST':
         if 'text' in request.form and request.form['text'].strip():
-            summary = generate_summary(request.form['text'])
+            summary, stats = generate_summary(request.form['text'])
 
         elif 'pdf' in request.files:
             file = request.files['pdf']
             if file and file.filename != "":
                 text = extract_text_from_pdf(file)
-                summary = generate_summary(text)
+                summary, stats = generate_summary(text)
 
-    return render_template('index.html', summary=summary)
+    return render_template('index.html', summary=summary, stats=stats)
 
 
 if __name__ == '__main__':
